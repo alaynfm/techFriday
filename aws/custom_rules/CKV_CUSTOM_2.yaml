@@ -1,0 +1,26 @@
+metadata:
+  id: "CKV_GREEN_3"
+  name: "Ensure no security groups allow SSH access"
+  category: "Security"
+  severity: "HIGH"
+  description: "This policy ensures that no security groups allow inbound SSH (port 22) access, which can pose a security risk."
+
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_security_group_rule"
+  attribute: "from_port"
+  operator: "eq"
+  value: 22
+
+  attribute: "to_port"
+  operator: "eq"
+  value: 22
+
+  attribute: "protocol"
+  operator: "eq"
+  value: "tcp"
+
+  attribute: "cidr_blocks"
+  operator: "not_contains"
+  value: "0.0.0.0/0"

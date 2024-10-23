@@ -1,0 +1,89 @@
+name: Comparative Tools
+
+on:
+  push: {}
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  static-analysis:
+    name: "Static Analysis for ${{ matrix.repo }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: 
+          #- KaiMonkey
+          - TerraGoat-AWS
+          - TerraGoat-Azure
+          #- AWSGoat
+          #- AzureGoat
+
+    steps:
+      - name: Checkout the Main Repository
+        uses: actions/checkout@v4
+
+      - name: Clone and Move TerraGoat AWS Files
+        if: matrix.repo == 'TerraGoat-AWS'
+        run: |
+          git clone https://github.com/octodemo/advanced-security-terraform.git
+          mv advanced-security-terraform/terraform/aws/* infra/
+
+      - name: Clone and Move TerraGoat Azure Files
+        if: matrix.repo == 'TerraGoat-Azure'
+        run: |
+          git clone https://github.com/octodemo/advanced-security-terraform.git
+          mv advanced-security-terraform/terraform/azure/* infra/
+
+      # Step 1: Run Checkov in silent mode
+      - name: Run Checkov in silent mode
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra/
+          framework: terraform
+          output_format: sarif
+          output_file_path: .
+          quiet: true
+        continue-on-error: true  # If Checkov fails, continue to next step
+
+      - name: Log after Checkov
+        run: |
+          echo "Checkov has completed. Moving to TFSec..."
+          sleep 4
+          ls -lias
+
+      # Step 2: Run TFSec
+      - name: Run TFSec SARIF Report
+        uses: aquasecurity/tfsec-sarif-action@v0.1.0
+        with:
+          sarif_file: tfsec.sarif
+
+      - name: Log after TFSec
+        run: |
+          echo "TFSec has completed. Moving to concatenate SARIF files..."
+          sleep 4
+          ls -la
+
+      # Step 3: Concatenate SARIF files
+      - name: Concatenate SARIF files dynamically
+        run: |
+          # Ensure combined.sarif is cleared/created
+          
+          # Find and concatenate all .sarif files in the directory
+          for file in $(find . -name "*.sarif"); do
+            echo "Concatenating $file"
+            cat "$file" >> combined.sarif
+          done
+
+      - name: Log after SARIF concatenation
+        run: |
+          echo "SARIF files concatenated. Uploading combined SARIF..."
+          ls -la
+
+      # Step 4: Upload Combined SARIF as an artifact
+      - name: Upload Combined SARIF as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: combined-sarif-${{ matrix.repo }}
+          path: combined.sarif

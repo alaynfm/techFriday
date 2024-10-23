@@ -1,0 +1,16 @@
+metadata:
+  id: "CKV_GREEN_2"
+  name: "Ensure EC2 instances use energy-efficient instance types"
+  category: "Cost Optimization"
+  severity: "LOW"
+  description: "Using smaller EC2 instances reduces energy consumption and cost. This policy ensures EC2 instances use 't3.micro' or smaller instance types."
+
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_instance"
+  attribute: "instance_type"
+  operator: "any"
+  value:
+    - "t3.micro"
+    - "t2.micro"

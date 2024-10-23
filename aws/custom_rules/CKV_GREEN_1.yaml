@@ -1,0 +1,16 @@
+metadata:
+  id: "CKV_GREEN_1"
+  name: "Ensure RDS instances use energy-efficient instance types"
+  category: "Cost Optimization"
+  severity: "LOW"
+  description: "Using smaller RDS instances reduces energy consumption and cost. This policy ensures RDS instances use 'db.t3.micro' or smaller instance classes."
+
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_db_instance"
+  attribute: "instance_class"
+  operator: "any"
+  value:
+    - "db.t3.micro"
+    - "db.t2.micro"
