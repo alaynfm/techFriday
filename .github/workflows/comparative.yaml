@@ -14,27 +14,45 @@ jobs:
     strategy:
       matrix:
         repo: 
-          #- KaiMonkey
+          #- KaiMonkey-AWS
           - TerraGoat-AWS
           - TerraGoat-Azure
-          #- AWSGoat
-          #- AzureGoat
+          - AWSGoat
+          - AzureGoat
 
     steps:
       - name: Checkout the Main Repository
         uses: actions/checkout@v4
 
-      - name: Clone and Move TerraGoat AWS Files
+      - name: Clone and Move KaiMonkey Files
+        if: matrix.repo == 'KaiMonkey'
+        run: |
+          git clone https://github.com/tenable/KaiMonkey.git
+          mv KaiMonkey/terraform/aws/* infra/
+
+      - name: Clone and Move Terragoat AWS Files
         if: matrix.repo == 'TerraGoat-AWS'
         run: |
           git clone https://github.com/octodemo/advanced-security-terraform.git
           mv advanced-security-terraform/terraform/aws/* infra/
 
-      - name: Clone and Move TerraGoat Azure Files
+      - name: Clone and Move Terragoat Azure Files
         if: matrix.repo == 'TerraGoat-Azure'
         run: |
           git clone https://github.com/octodemo/advanced-security-terraform.git
           mv advanced-security-terraform/terraform/azure/* infra/
+
+      - name: Clone and Move AWSGoat Files
+        if: matrix.repo == 'AWSGoat'
+        run: |
+          git clone https://github.com/ine-labs/AWSGoat.git
+          mv AWSGoat/modules/* infra/
+
+      - name: Clone and Move AzureGoat Files
+        if: matrix.repo == 'AzureGoat'
+        run: |
+          git clone https://github.com/ine-labs/AzureGoat.git
+          mv AzureGoat/modules/module-1/* infra/
 
       # Step 1: Run Checkov in silent mode
       - name: Run Checkov in silent mode
@@ -61,29 +79,20 @@ jobs:
 
       - name: Log after TFSec
         run: |
-          echo "TFSec has completed. Moving to concatenate SARIF files..."
+          echo "TFSec has completed. Zipping the SARIF files..."
           sleep 4
           ls -la
 
-      # Step 3: Concatenate SARIF files
-      - name: Concatenate SARIF files dynamically
+      # Step 3: Zip all SARIF files in the directory
+      - name: Zip all SARIF files
         run: |
-          # Ensure combined.sarif is cleared/created
-          
-          # Find and concatenate all .sarif files in the directory
-          for file in $(find . -name "*.sarif"); do
-            echo "Concatenating $file"
-            cat "$file" >> combined.sarif
-          done
-
-      - name: Log after SARIF concatenation
-        run: |
-          echo "SARIF files concatenated. Uploading combined SARIF..."
+          zip combined-sarif-${{ matrix.repo }}.zip *.sarif
+          echo "Zipped all SARIF files to combined-sarif-${{ matrix.repo }}.zip"
           ls -la
 
-      # Step 4: Upload Combined SARIF as an artifact
-      - name: Upload Combined SARIF as an artifact
+      # Step 4: Upload Zipped SARIF as an artifact
+      - name: Upload Zipped SARIF as an artifact
         uses: actions/upload-artifact@v3
         with:
-          name: combined-sarif-${{ matrix.repo }}
-          path: combined.sarif
+          name: combined-sarif-${{ matrix.repo }}.zip
+          path: combined-sarif-${{ matrix.repo }}.zip
