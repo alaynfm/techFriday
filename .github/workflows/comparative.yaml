@@ -32,7 +32,7 @@ jobs:
 
       - name: Clone and Move Files Based on Repo
         env:
-          SONAR_TOKEN: ${{ secrets['SONARQUBE_' + matrix.repo | toUpperCase()] }}  # Dynamically use the correct secret
+          SONAR_TOKEN: NOCONFIGURED  # Dynamically use the correct secret
         run: |
           export TOKEN=SONAR_TOKEN
 
@@ -56,7 +56,7 @@ jobs:
             git clone https://github.com/ine-labs/AzureGoat.git
             mv AzureGoat/modules/module-1/* infra/
 
-            
+
       - name: Run Checkov in silent mode
         uses: bridgecrewio/checkov-action@master
         with:
