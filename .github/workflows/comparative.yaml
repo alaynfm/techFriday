@@ -28,56 +28,35 @@ jobs:
       - name: Create Infra Folder
         run: mkdir infra
 
-      - name: Clone and Move KaiMonkey Files
-        if: matrix.repo == 'awsMonkey'
+
+
+      - name: Clone and Move Files Based on Repo
         env:
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_AWSMONKEY }}  # Use secrets for tokens
+          SONAR_TOKEN: ${{ secrets['SONARQUBE_' + matrix.repo | toUpperCase()] }}  # Dynamically use the correct secret
         run: |
           export TOKEN=SONAR_TOKEN
-          git clone https://github.com/tenable/KaiMonkey.git
-          mv KaiMonkey/terraform/aws/* infra/
+
+          if [[ "${{ matrix.repo }}" == "awsMonkey" ]]; then
+            git clone https://github.com/tenable/KaiMonkey.git
+            mv KaiMonkey/terraform/aws/* infra/
           
+          elif [[ "${{ matrix.repo }}" == "awsTerraGoat" ]]; then
+            git clone https://github.com/octodemo/advanced-security-terraform.git
+            mv advanced-security-terraform/terraform/aws/* infra/
 
-      - name: Clone and Move Terragoat AWS Files
-        if: matrix.repo == 'awsTerraGoat'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_AWSTERRAGOAT }}  # Use secrets for tokens
-        run: |
-          export TOKEN=SONAR_TOKEN
-          git clone https://github.com/octodemo/advanced-security-terraform.git
-          mv advanced-security-terraform/terraform/aws/* infra/
-          export sonarToken=
+          elif [[ "${{ matrix.repo }}" == "azTerraGoat" ]]; then
+            git clone https://github.com/octodemo/advanced-security-terraform.git
+            mv advanced-security-terraform/terraform/azure/* infra/
 
-      - name: Clone and Move Terragoat Azure Files
-        if: matrix.repo == 'azTerraGoat'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_AZTERRAGOAT }}  # Use secrets for tokens
-        run: |
-          export TOKEN=SONAR_TOKEN
-          git clone https://github.com/octodemo/advanced-security-terraform.git
-          mv advanced-security-terraform/terraform/azure/* infra/
-          export sonarToken=
+          elif [[ "${{ matrix.repo }}" == "awsGoat" ]]; then
+            git clone https://github.com/ine-labs/AWSGoat.git
+            mv AWSGoat/modules/* infra/
 
-      - name: Clone and Move AWSGoat Files
-        if: matrix.repo == 'awsGoat'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_AWSGOAT }}  # Use secrets for tokens
-        run: |
-          export TOKEN=SONAR_TOKEN
-          git clone https://github.com/ine-labs/AWSGoat.git
-          mv AWSGoat/modules/* infra/
-          export sonarToken=
+          elif [[ "${{ matrix.repo }}" == "azGoat" ]]; then
+            git clone https://github.com/ine-labs/AzureGoat.git
+            mv AzureGoat/modules/module-1/* infra/
 
-      - name: Clone and Move AzureGoat Files
-        if: matrix.repo == 'azGoat'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_AZGOAT }}  # Use secrets for tokens
-        run: |
-          export TOKEN=SONAR_TOKEN
-          git clone https://github.com/ine-labs/AzureGoat.git
-          mv AzureGoat/modules/module-1/* infra/
-          export sonarToken=
-
+            
       - name: Run Checkov in silent mode
         uses: bridgecrewio/checkov-action@master
         with:
