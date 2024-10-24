@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: Checkout the Repository and Branch
         uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.repo }}
 
       - name: Create Infra Folder
         run: mkdir infra
