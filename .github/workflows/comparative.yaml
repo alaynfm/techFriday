@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   static-analysis:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         repo: 
@@ -117,19 +117,24 @@ jobs:
               jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ matrix.repo }}.sarif
           done
 
-      - name: Upload Zipped SARIF as an artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: combined-sarif-${{ matrix.repo }}.zip
-          path: combined-sarif-${{ matrix.repo }}.zip
 
-      - name: Run SonarQube Analysis
-        env:
-          SONAR_PROJECT_KEY: ${{ matrix.repo }}
-          SONAR_HOST_URL: http://sonarqube:9000
-        run: |
-          sonar-scanner \
-            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-            -Dsonar.host.url=$SONAR_HOST_URL \
-            -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.working.directory="/home/docker/.scannerwork"
+# sonarqubeRepo:
+#   name: "GATHER ALL"
+#   runs-on: self-hosted
+#   steps:
+#     - name: Upload Zipped SARIF as an artifact
+#       uses: actions/upload-artifact@v3
+#       with:
+#         name: combined-sarif-${{ matrix.repo }}.zip
+#         path: combined-sarif-${{ matrix.repo }}.zip
+#
+#     - name: Run SonarQube Analysis
+#       env:
+#         SONAR_PROJECT_KEY: ${{ matrix.repo }}
+#         SONAR_HOST_URL: http://sonarqube:9000
+#       run: |
+#         sonar-scanner \
+#           -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+#           -Dsonar.host.url=$SONAR_HOST_URL \
+#           -Dsonar.token=$SONAR_TOKEN \
+#           -Dsonar.working.directory="/home/docker/.scannerwork"
