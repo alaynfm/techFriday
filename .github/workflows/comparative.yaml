@@ -1,4 +1,4 @@
-name: "Static Analysis "
+name: "Static Analysis"
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
           - azGoat
 
     steps:
-      - name: Checkout the Main Repository
+      - name: Checkout the Repository and Branch
         uses: actions/checkout@v4
         with:
           ref: ${{ matrix.repo }}
