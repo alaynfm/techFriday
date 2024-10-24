@@ -7,7 +7,6 @@ permissions:
   contents: write
   security-events: write
 
-
 jobs:
   static-analysis:
     name: "Static Analysis for ${{ matrix.repo }}"
@@ -15,7 +14,6 @@ jobs:
     strategy:
       matrix:
         repo: 
-          #- awsMonkey
           - awsTerraGoat
           - azTerraGoat
           - awsGoat
@@ -28,41 +26,24 @@ jobs:
           ref: ${{ matrix.repo }}
       
       - name: Create Infra Folder
+        run: mkdir infra
+
+      - name: Clone and Move Files
         run: |
-          mkdir infra
+          if [ "${{ matrix.repo }}" == "awsTerraGoat" ]; then
+            git clone https://github.com/octodemo/advanced-security-terraform.git
+            mv advanced-security-terraform/terraform/aws/* infra/
+          elif [ "${{ matrix.repo }}" == "azTerraGoat" ]; then
+            git clone https://github.com/octodemo/advanced-security-terraform.git
+            mv advanced-security-terraform/terraform/azure/* infra/
+          elif [ "${{ matrix.repo }}" == "awsGoat" ]; then
+            git clone https://github.com/ine-labs/AWSGoat.git
+            mv AWSGoat/modules/* infra/
+          elif [ "${{ matrix.repo }}" == "azGoat" ]; then
+            git clone https://github.com/ine-labs/AzureGoat.git
+            mv AzureGoat/modules/module-1/* infra/
+          fi
 
-      - name: Clone and Move KaiMonkey Files
-        if: matrix.repo == 'awsMonkey'
-        run: |
-          git clone https://github.com/tenable/KaiMonkey.git
-          mv KaiMonkey/terraform/aws/* infra/
-
-      - name: Clone and Move Terragoat AWS Files
-        if: matrix.repo == 'awsTerraGoat'
-        run: |
-          git clone https://github.com/octodemo/advanced-security-terraform.git
-          mv advanced-security-terraform/terraform/aws/* infra/
-
-      - name: Clone and Move Terragoat Azure Files
-        if: matrix.repo == 'azTerraGoat'
-        run: |
-          git clone https://github.com/octodemo/advanced-security-terraform.git
-          mv advanced-security-terraform/terraform/azure/* infra/
-
-      - name: Clone and Move AWSGoat Files
-        if: matrix.repo == 'awsGoat'
-        run: |
-          git clone https://github.com/ine-labs/AWSGoat.git
-          mv AWSGoat/modules/* infra/
-
-      - name: Clone and Move AzureGoat Files
-        if: matrix.repo == 'azGoat'
-        run: |
-          git clone https://github.com/ine-labs/AzureGoat.git
-          mv AzureGoat/modules/module-1/* infra/
-
-
-      # Step 1: Run Checkov in silent mode
       - name: Run Checkov in silent mode
         uses: bridgecrewio/checkov-action@master
         with:
@@ -71,7 +52,7 @@ jobs:
           output_format: sarif
           output_file_path: .
           quiet: true
-        continue-on-error: true  # If Checkov fails, continue to next step
+        continue-on-error: true
 
       - name: Log after Checkov
         run: |
@@ -79,7 +60,6 @@ jobs:
           sleep 4
           ls -lias
 
-      # Step 2: Run TFSec
       - name: Run TFSec SARIF Report
         uses: aquasecurity/tfsec-sarif-action@v0.1.0
         with:
@@ -91,17 +71,13 @@ jobs:
           sleep 4
           ls -la
 
-      # Step 3: Zip all SARIF files in the directory
       - name: Zip all SARIF files
         run: |
           zip combined-sarif-${{ matrix.repo }}.zip *.sarif
           echo "Zipped all SARIF files to combined-sarif-${{ matrix.repo }}.zip"
           ls -la
 
-          # Create an empty combined.sarif file with the initial structure
           echo '{"version": "2.1.0", "runs": []}' > combined.sarif
-
-          # Concatenate all .sarif files
           for file in *.sarif; do
               jq -s '.[0].runs += .[1].runs | .[0]' combined.sarif "$file" > temp.sarif && mv temp.sarif combined.sarif
           done
@@ -109,12 +85,9 @@ jobs:
       - name: Upload Checkov SARIF Reports
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: |
-            combined.sarif
+          sarif_file: combined.sarif
           category: analysis-${{ matrix.repo }}
 
-
-      # Step 4: Upload Zipped SARIF as an artifact
       - name: Upload Zipped SARIF as an artifact
         uses: actions/upload-artifact@v3
         with:
