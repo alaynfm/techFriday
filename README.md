@@ -51,16 +51,12 @@ SARIF (Static Analysis Results Interchange Format) is an OASIS Standard that def
 
 In GitHub Security, all reports are uploaded to the same [section](https://github.com/alaynfm/techFriday/security/code-scanning) and can be filtered by tool and branch. To separate the different results, different branches have been created.
 
-#### Pipeline Stages
+#### Static Analysis Tools
 
-- CHECK for Secrets: It is imporant to check the security and quelity tool of the terraform code, without forgeting the repository security aside ;)
-- Code Linters: Avoid typos, ...
-    - TFLINT
-- Terraform Static code Analysis Tool:
-    - CHECKOV
-    - TFSEC
-    - SONAR
-    - TERRASCAN (Q4 2024)
+- CHECKOV
+- TFSEC
+- SONAR
+- TERRASCAN (Q4 2024)
 
 ### Tools Analysis
 
