@@ -35,7 +35,7 @@ The scope includes only AWS and Azure public clouds. To determine the most suita
 
 ### THE PIPELINE
 
-There is only one pipeline and it will execute a static analysis in the different inrastructure code.  To select different project when executing manually the pipeline the input branch can be selected
+There is only one pipeline and it will execute a static analysis in the different inrastructure code.  Each Result is uploaded to the corresponding branch, this would be the branch list:
 
 - KaiMonkey: `aws KaiMonkey`
 - TerraGoat: `aws terragoat` || `az terragoat`

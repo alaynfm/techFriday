@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Checkout the Main Repository
         uses: actions/checkout@v4
+      
+      - name: Create Infra Folder
+        run: |
+          mkdir infra
 
       - name: Clone and Move KaiMonkey Files
         if: matrix.repo == 'KaiMonkey'
