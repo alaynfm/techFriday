@@ -99,13 +99,11 @@ jobs:
           ls -la
 
           # Create an empty combined.sarif file with the initial structure
-          echo '{"version": "2.1.0", "runs": []}' > combined.sarif
-
-          echo '{"version": "2.1.0", "runs": []}' > combined2.sarif
+          echo '{"version": "2.1.0", "runs": []}' > combined-${{ matrix.repo }.sarif
 
           # Concatenate all .sarif files
           for file in *.sarif; do
-              jq -s '.[0].runs += .[1].runs | .[0]' combined.sarif "$file" > temp.sarif && mv temp.sarif combined.sarif
+              jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ matrix.repo }.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ matrix.repo }.sarif
           done
 
       #Upload to github security
