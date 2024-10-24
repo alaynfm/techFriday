@@ -14,49 +14,52 @@ jobs:
     strategy:
       matrix:
         repo: 
-          #- KaiMonkey-AWS
-          - TerraGoat-AWS
-          - TerraGoat-Azure
-          - AWSGoat
-          - AzureGoat
+          #- awsMonkey
+          - awsTerraGoat
+          - azTerraGoat
+          - awsGoat
+          - azGoat
 
     steps:
       - name: Checkout the Main Repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.repo }}
       
       - name: Create Infra Folder
         run: |
           mkdir infra
 
       - name: Clone and Move KaiMonkey Files
-        if: matrix.repo == 'KaiMonkey'
+        if: matrix.repo == 'awsMonkey'
         run: |
           git clone https://github.com/tenable/KaiMonkey.git
           mv KaiMonkey/terraform/aws/* infra/
 
       - name: Clone and Move Terragoat AWS Files
-        if: matrix.repo == 'TerraGoat-AWS'
+        if: matrix.repo == 'awsTerraGoat'
         run: |
           git clone https://github.com/octodemo/advanced-security-terraform.git
           mv advanced-security-terraform/terraform/aws/* infra/
 
       - name: Clone and Move Terragoat Azure Files
-        if: matrix.repo == 'TerraGoat-Azure'
+        if: matrix.repo == 'azTerraGoat'
         run: |
           git clone https://github.com/octodemo/advanced-security-terraform.git
           mv advanced-security-terraform/terraform/azure/* infra/
 
       - name: Clone and Move AWSGoat Files
-        if: matrix.repo == 'AWSGoat'
+        if: matrix.repo == 'awsGoat'
         run: |
           git clone https://github.com/ine-labs/AWSGoat.git
           mv AWSGoat/modules/* infra/
 
       - name: Clone and Move AzureGoat Files
-        if: matrix.repo == 'AzureGoat'
+        if: matrix.repo == 'azGoat'
         run: |
           git clone https://github.com/ine-labs/AzureGoat.git
           mv AzureGoat/modules/module-1/* infra/
+
 
       # Step 1: Run Checkov in silent mode
       - name: Run Checkov in silent mode
@@ -93,6 +96,22 @@ jobs:
           zip combined-sarif-${{ matrix.repo }}.zip *.sarif
           echo "Zipped all SARIF files to combined-sarif-${{ matrix.repo }}.zip"
           ls -la
+
+          # Create an empty combined.sarif file with the initial structure
+          echo '{"version": "2.1.0", "runs": []}' > combined.sarif
+
+          # Concatenate all .sarif files
+          for file in *.sarif; do
+              jq -s '.[0].runs += .[1].runs | .[0]' combined.sarif "$file" > temp.sarif && mv temp.sarif combined.sarif
+          done
+
+      - name: Upload Checkov SARIF Reports
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: |
+            combined.sarif
+          category: analysis-${{ matrix.repo }}
+
 
       # Step 4: Upload Zipped SARIF as an artifact
       - name: Upload Zipped SARIF as an artifact
