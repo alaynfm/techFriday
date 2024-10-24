@@ -28,33 +28,17 @@ The scope includes only AWS and Azure public clouds. To determine the most suita
 - **[TerraGoat](https://github.com/octodemo/advanced-security-terraform)**: A vulnerable infrastructure for both AWS and Azure, designed to test security configurations.
 - **[AWSGoat](https://github.com/ine-labs/AWSGoat)**: A vulnerable infrastructure for AWS.
 - **[AzureGoat](https://github.com/ine-labs/AzureGoat)**: Designede for Azure
-- **TechFridayCode**: A less vulnerable application designed for development purposes.
 
 > [!CAUTION] 
 > These are intentionally vulnerable resources. **DO NOT** deploy them in a **ANY** unsupervised environment.
 
 ### THE PIPELINE
 
-There is only one pipeline and it will execute a static analysis in the different inrastructure code.  Each Result is uploaded to the corresponding branch, this would be the branch list:
-
-- KaiMonkey: `awsMonkey`
-- TerraGoat: `awsTerraGoat` || `azTerraGoat`
-- AWSGoat: `awsGoat` 
-- AzureGoat: `azGoat` 
-
-#### Why different branches? 
-
-All the tools that are going to be analyzed upload SARIF reports to GITHUB SECURITY.
-
-SARIF (Static Analysis Results Interchange Format) is an OASIS Standard that defines an output file format. The SARIF standard is used to streamline how static analysis tools share their results. 
-
-In GitHub Security, all reports are uploaded to the same [section](https://github.com/alaynfm/techFriday/security/code-scanning) and can be filtered by tool and branch. To separate the different results, different branches have been created.
-
 #### Static Analysis Tools
 
 - CHECKOV
 - TFSEC
-- SONAR
+- SONAR (LOCAL RUNNERS FOR COMMUNITY EDITION)
 - TERRASCAN (Q4 2024)
 
 ### Tools Analysis
