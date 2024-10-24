@@ -1,4 +1,4 @@
-name: "Comparative"
+name: "TECHFRIDAY PIPELINE"
 
 on:
   push:
@@ -96,6 +96,12 @@ jobs:
           for file in *.sarif; do
               jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ matrix.repo }}.sarif
           done
+      
+      - name: Upload Zipped SARIF as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: combined-sarif-${{ matrix.repo }}.zip
+          path: combined-sarif-${{ matrix.repo }}.zip
 
 
 # sonarqubeRepo:
