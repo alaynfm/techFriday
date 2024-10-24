@@ -1,4 +1,4 @@
-name: "Static Analysis for ${{ matrix.repo }}"
+name: "Static Analysis "
 
 on:
   push:
