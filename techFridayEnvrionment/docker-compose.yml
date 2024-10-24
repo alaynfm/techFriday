@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  runner:
+    build: .  # Use "build" if you're building your own Dockerfile
+    restart: always
+    environment:
+      - REPO=C3p0  # Replace with your GitHub owner/repo
+      - REG_TOKEN=jajajajajajaxd  # Replace with your GitHub registration token for the self-hosted runner
+      - NAME=runner-1  # You can give a custom name for your self-hosted runner
+    deploy:
+      mode: replicated
+      replicas: 1  # This will run 1 replica of the GitHub Actions Runner
+      resources:
+        limits:
+          cpus: '0.5'  # Limit each runner to 0.5 CPUs
+          memory: 512M  # Limit each runner to 512MB of memory
+        reservations:
+          cpus: '0.4'  # Reserve at least 0.4 CPUs for each runner
+          memory: 256M  # Reserve at least 256MB of memory
+    networks:
+      - runner-net
+  #sqp_525d061da14fca2f43217149238e52c7ed786c83
+  #doxwo9Wymbosfavfij$
+  sonarqube: 
+    image: sonarqube:community
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/sonarqube
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    ports:
+      - "9000:9000"
+    networks:
+      - runner-net
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  postgres:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonarqube
+    networks:
+      - runner-net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  runner-net:
+    driver: bridge
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  postgres_data:
