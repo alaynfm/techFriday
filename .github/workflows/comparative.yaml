@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   static-analysis:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         repo: 
@@ -30,33 +30,53 @@ jobs:
 
       - name: Clone and Move KaiMonkey Files
         if: matrix.repo == 'awsMonkey'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_AWSMONKEY }}  # Use secrets for tokens
         run: |
+          export TOKEN=SONAR_TOKEN
           git clone https://github.com/tenable/KaiMonkey.git
           mv KaiMonkey/terraform/aws/* infra/
+          
 
       - name: Clone and Move Terragoat AWS Files
         if: matrix.repo == 'awsTerraGoat'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_AWSTERRAGOAT }}  # Use secrets for tokens
         run: |
+          export TOKEN=SONAR_TOKEN
           git clone https://github.com/octodemo/advanced-security-terraform.git
           mv advanced-security-terraform/terraform/aws/* infra/
+          export sonarToken=
 
       - name: Clone and Move Terragoat Azure Files
         if: matrix.repo == 'azTerraGoat'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_AZTERRAGOAT }}  # Use secrets for tokens
         run: |
+          export TOKEN=SONAR_TOKEN
           git clone https://github.com/octodemo/advanced-security-terraform.git
           mv advanced-security-terraform/terraform/azure/* infra/
+          export sonarToken=
 
       - name: Clone and Move AWSGoat Files
         if: matrix.repo == 'awsGoat'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_AWSGOAT }}  # Use secrets for tokens
         run: |
+          export TOKEN=SONAR_TOKEN
           git clone https://github.com/ine-labs/AWSGoat.git
           mv AWSGoat/modules/* infra/
+          export sonarToken=
 
       - name: Clone and Move AzureGoat Files
         if: matrix.repo == 'azGoat'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_AZGOAT }}  # Use secrets for tokens
         run: |
+          export TOKEN=SONAR_TOKEN
           git clone https://github.com/ine-labs/AzureGoat.git
           mv AzureGoat/modules/module-1/* infra/
+          export sonarToken=
 
       - name: Run Checkov in silent mode
         uses: bridgecrewio/checkov-action@master
@@ -102,3 +122,14 @@ jobs:
         with:
           name: combined-sarif-${{ matrix.repo }}.zip
           path: combined-sarif-${{ matrix.repo }}.zip
+
+      - name: Run SonarQube Analysis
+        env:
+          SONAR_PROJECT_KEY: ${{ matrix.repo }}
+          SONAR_HOST_URL: http://sonarqube:9000
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.working.directory="/home/docker/.scannerwork"
