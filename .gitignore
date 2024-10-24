@@ -1,0 +1,43 @@
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore Jupyter Notebook's autosave files
+*.~nb~
+*.~ipynb~
+
+# Ignore data files that shouldn't be version controlled
+*.csv
+*.h5
+*.json
+*.sqlite3
+*.db
+
+# Ignore configuration files
+*.env
+.envrc
+.DS_Store
+
+# Ignore output directories like data or results (if applicable)
+data/
+results/
+
+# Ignore Jupyter extensions and settings
+.jupyter/
+.local/share/jupyter/
+runtime/
+.jupyter/lab/
+.jupyter/lab/workspaces/
+
+# Ignore IPython history and profile files
+.ipython/
