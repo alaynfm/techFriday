@@ -98,10 +98,12 @@ jobs:
               jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ matrix.repo }}.sarif
           done
 
+          echo '{"version": "2.1.0", "runs": []}' > empty.sarif
+
       - name: Upload Checkov SARIF Reports
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: combined-${{ matrix.repo }}.sarif
+          sarif_file: empty.sarif
           category: analysis-${{ matrix.repo }}
 
       - name: Upload Zipped SARIF as an artifact
