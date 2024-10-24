@@ -65,7 +65,7 @@ jobs:
           directory: infra/
           framework: terraform
           output_format: sarif
-          output_file_path: checkov-${{ matrix.repo }}.sarif
+          output_file_path: .
           quiet: true
         continue-on-error: true
 
