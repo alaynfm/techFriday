@@ -1,21 +1,20 @@
-name: Comparative Tools
+name: "Static Analysis for ${{ matrix.repo }}"
 
 on:
-  push: {}
+  push:
+    branches:
+      - '**'
 
 permissions:
   contents: write
   security-events: write
 
-
 jobs:
   static-analysis:
-    name: "Static Analysis for ${{ matrix.repo }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         repo: 
-          #- awsMonkey
           - awsTerraGoat
           - azTerraGoat
           - awsGoat
@@ -25,11 +24,10 @@ jobs:
       - name: Checkout the Main Repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.repo }}
-      
+          ref: ${{ github.ref }}
+
       - name: Create Infra Folder
-        run: |
-          mkdir infra
+        run: mkdir infra
 
       - name: Clone and Move KaiMonkey Files
         if: matrix.repo == 'awsMonkey'
@@ -61,17 +59,15 @@ jobs:
           git clone https://github.com/ine-labs/AzureGoat.git
           mv AzureGoat/modules/module-1/* infra/
 
-
-      # Step 1: Run Checkov in silent mode
       - name: Run Checkov in silent mode
         uses: bridgecrewio/checkov-action@master
         with:
           directory: infra/
           framework: terraform
           output_format: sarif
-          output_file_path: .
+          output_file_path: checkov-${{ github.ref_name }}-${{ matrix.repo }}.sarif
           quiet: true
-        continue-on-error: true  # If Checkov fails, continue to next step
+        continue-on-error: true
 
       - name: Log after Checkov
         run: |
@@ -79,11 +75,10 @@ jobs:
           sleep 4
           ls -lias
 
-      # Step 2: Run TFSec
       - name: Run TFSec SARIF Report
         uses: aquasecurity/tfsec-sarif-action@v0.1.0
         with:
-          sarif_file: tfsec.sarif
+          sarif_file: tfsec-${{ github.ref_name }}-${{ matrix.repo }}.sarif
 
       - name: Log after TFSec
         run: |
@@ -91,33 +86,26 @@ jobs:
           sleep 4
           ls -la
 
-      # Step 3: Zip all SARIF files in the directory
       - name: Zip all SARIF files
         run: |
-          zip combined-sarif-${{ matrix.repo }}.zip *.sarif
-          echo "Zipped all SARIF files to combined-sarif-${{ matrix.repo }}.zip"
+          zip combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip *.sarif
+          echo "Zipped all SARIF files to combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip"
           ls -la
 
-          # Create an empty combined.sarif file with the initial structure
-          echo '{"version": "2.1.0", "runs": []}' > combined-${{ matrix.repo }}.sarif
+          echo '{"version": "2.1.0", "runs": []}' > combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif
 
-          # Concatenate all .sarif files
           for file in *.sarif; do
-              jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ matrix.repo }}.sarif
+              jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif
           done
 
-      #Upload to github security
       - name: Upload Checkov SARIF Reports
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: |
-            combined-${{ matrix.repo }}.sarif
+          sarif_file: combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif
           category: analysis-${{ matrix.repo }}
 
-
-      # Step 4: Upload Zipped SARIF as an artifact
       - name: Upload Zipped SARIF as an artifact
         uses: actions/upload-artifact@v3
         with:
-          name: combined-sarif-${{ matrix.repo }}.zip
-          path: combined-sarif-${{ matrix.repo }}.zip
+          name: combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip
+          path: combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip
