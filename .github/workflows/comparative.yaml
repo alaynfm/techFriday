@@ -55,6 +55,7 @@ jobs:
           elif [[ "${{ matrix.repo }}" == "azGoat" ]]; then
             git clone https://github.com/ine-labs/AzureGoat.git
             mv AzureGoat/modules/module-1/* infra/
+          fi
 
 
       - name: Run Checkov in silent mode
