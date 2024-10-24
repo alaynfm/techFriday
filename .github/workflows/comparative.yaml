@@ -98,7 +98,22 @@ jobs:
               jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ matrix.repo }}.sarif
           done
 
-          echo '{"version": "2.1.0", "runs": []}' > empty.sarif
+          echo '{
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "CodeQL",
+                    "version": "2.6.3",
+                    "informationUri": "https://github.com/github/codeql",
+                    "rules": []
+                  }
+                },
+                "results": []
+              }
+            ]
+          }' > empty.sarif
 
       - name: Upload Checkov SARIF Reports
         uses: github/codeql-action/upload-sarif@v3
