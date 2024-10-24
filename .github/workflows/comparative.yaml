@@ -24,7 +24,7 @@ jobs:
       - name: Checkout the Main Repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ matrix.repo }}
 
       - name: Create Infra Folder
         run: mkdir infra
@@ -65,7 +65,7 @@ jobs:
           directory: infra/
           framework: terraform
           output_format: sarif
-          output_file_path: checkov-${{ github.ref_name }}-${{ matrix.repo }}.sarif
+          output_file_path: checkov-${{ matrix.repo }}.sarif
           quiet: true
         continue-on-error: true
 
@@ -78,7 +78,7 @@ jobs:
       - name: Run TFSec SARIF Report
         uses: aquasecurity/tfsec-sarif-action@v0.1.0
         with:
-          sarif_file: tfsec-${{ github.ref_name }}-${{ matrix.repo }}.sarif
+          sarif_file: tfsec-${{ matrix.repo }}.sarif
 
       - name: Log after TFSec
         run: |
@@ -88,24 +88,24 @@ jobs:
 
       - name: Zip all SARIF files
         run: |
-          zip combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip *.sarif
-          echo "Zipped all SARIF files to combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip"
+          zip combined-sarif-${{ matrix.repo }}.zip *.sarif
+          echo "Zipped all SARIF files to combined-sarif-${{ matrix.repo }}.zip"
           ls -la
 
-          echo '{"version": "2.1.0", "runs": []}' > combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif
+          echo '{"version": "2.1.0", "runs": []}' > combined-${{ matrix.repo }}.sarif
 
           for file in *.sarif; do
-              jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif
+              jq -s '.[0].runs += .[1].runs | .[0]' combined-${{ matrix.repo }}.sarif "$file" > temp.sarif && mv temp.sarif combined-${{ matrix.repo }}.sarif
           done
 
       - name: Upload Checkov SARIF Reports
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: combined-${{ github.ref_name }}-${{ matrix.repo }}.sarif
+          sarif_file: combined-${{ matrix.repo }}.sarif
           category: analysis-${{ matrix.repo }}
 
       - name: Upload Zipped SARIF as an artifact
         uses: actions/upload-artifact@v3
         with:
-          name: combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip
-          path: combined-sarif-${{ github.ref_name }}-${{ matrix.repo }}.zip
+          name: combined-sarif-${{ matrix.repo }}.zip
+          path: combined-sarif-${{ matrix.repo }}.zip
