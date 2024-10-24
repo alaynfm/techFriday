@@ -37,11 +37,10 @@ The scope includes only AWS and Azure public clouds. To determine the most suita
 
 There is only one pipeline and it will execute a static analysis in the different inrastructure code.  Each Result is uploaded to the corresponding branch, this would be the branch list:
 
-- KaiMonkey: `aws KaiMonkey`
-- TerraGoat: `aws terragoat` || `az terragoat`
-- AWSGoat: `aws` 
-- AzureGoat: `az` 
-- TechFridayCode: `dev` 
+- KaiMonkey: `awsMonkey`
+- TerraGoat: `awsTerraGoat` || `azTerraGoat`
+- AWSGoat: `awsGoat` 
+- AzureGoat: `azGoat` 
 
 #### Why different branches? 
 
